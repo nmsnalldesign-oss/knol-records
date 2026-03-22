@@ -84,27 +84,49 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Создаём директорию для загрузок
+    // Создаём директорию для загрузок (пропускаем или игнорим ошибку на Vercel)
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-    await mkdir(uploadsDir, { recursive: true })
+    try {
+      if (!process.env.VERCEL) {
+        await mkdir(uploadsDir, { recursive: true })
+      }
+    } catch (e) {
+      console.warn('API: Could not create uploads directory', e)
+    }
 
     const trackId = uuidv4()
 
     // Сохраняем аудиофайл
     const audioExt = audioFile.name.split('.').pop() || 'mp3'
     const audioFileName = `${trackId}.${audioExt}`
-    const audioBuffer = Buffer.from(await audioFile.arrayBuffer())
-    await writeFile(path.join(uploadsDir, audioFileName), audioBuffer)
     const audioUrl = `/uploads/${audioFileName}`
+    
+    try {
+      if (!process.env.VERCEL) {
+        const audioBuffer = Buffer.from(await audioFile.arrayBuffer())
+        await writeFile(path.join(uploadsDir, audioFileName), audioBuffer)
+      } else {
+        console.log('API: Running on Vercel, skipping disk write for audio')
+      }
+    } catch (e) {
+      console.warn('API: File write failed (expected on Vercel)', e)
+    }
 
     // Сохраняем обложку (если есть)
     let coverUrl = ''
     if (coverFile && coverFile.size > 0) {
       const coverExt = coverFile.name.split('.').pop() || 'jpg'
       const coverFileName = `${trackId}-cover.${coverExt}`
-      const coverBuffer = Buffer.from(await coverFile.arrayBuffer())
-      await writeFile(path.join(uploadsDir, coverFileName), coverBuffer)
       coverUrl = `/uploads/${coverFileName}`
+      
+      try {
+        if (!process.env.VERCEL) {
+          const coverBuffer = Buffer.from(await coverFile.arrayBuffer())
+          await writeFile(path.join(uploadsDir, coverFileName), coverBuffer)
+        }
+      } catch (e) {
+        console.warn('API: Cover file write failed', e)
+      }
     }
 
     // Создаём запись в БД

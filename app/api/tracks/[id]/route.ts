@@ -53,17 +53,31 @@ export async function PATCH(
       if (coverFile && coverFile.size > 0) {
         const coverExt = coverFile.name.split('.').pop() || 'jpg'
         const coverFileName = `${params.id}-cover-${Date.now()}.${coverExt}`
-        const coverBuffer = Buffer.from(await coverFile.arrayBuffer())
-        await writeFile(path.join(uploadsDir, coverFileName), coverBuffer)
         body.cover_url = `/uploads/${coverFileName}`
+        
+        try {
+          if (!process.env.VERCEL) {
+            const coverBuffer = Buffer.from(await coverFile.arrayBuffer())
+            await writeFile(path.join(uploadsDir, coverFileName), coverBuffer)
+          }
+        } catch (e) {
+          console.warn('API: Patch cover file write failed', e)
+        }
       }
       
       if (audioFile && audioFile.size > 0) {
         const audioExt = audioFile.name.split('.').pop() || 'mp3'
         const audioFileName = `${params.id}-${Date.now()}.${audioExt}`
-        const audioBuffer = Buffer.from(await audioFile.arrayBuffer())
-        await writeFile(path.join(uploadsDir, audioFileName), audioBuffer)
         body.audio_url = `/uploads/${audioFileName}`
+
+        try {
+          if (!process.env.VERCEL) {
+            const audioBuffer = Buffer.from(await audioFile.arrayBuffer())
+            await writeFile(path.join(uploadsDir, audioFileName), audioBuffer)
+          }
+        } catch (e) {
+          console.warn('API: Patch audio file write failed', e)
+        }
       }
     } catch {
       // Иначе парсим как обычный JSON

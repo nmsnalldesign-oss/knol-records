@@ -135,15 +135,26 @@ export interface Track {
   is_active: number
 }
 
+// ── Вспомогательные функции ──
+function mapTrack(row: any): Track {
+  if (!row) return row
+  return {
+    ...row,
+    created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    updated_at: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at
+  }
+}
+
 export async function getAllTracks(): Promise<Track[]> {
   if (isPostgres) {
     await ensurePostgresSchema()
     const pg = getPostgres()
     const rows = await pg`SELECT * FROM tracks WHERE is_active = 1 ORDER BY created_at DESC`
-    return rows as unknown as Track[]
+    return rows.map(mapTrack)
   } else {
     const db = getSqlite()
-    return db.prepare('SELECT * FROM tracks WHERE is_active = 1 ORDER BY created_at DESC').all() as Track[]
+    const rows = db.prepare('SELECT * FROM tracks WHERE is_active = 1 ORDER BY created_at DESC').all() as any[]
+    return rows.map(mapTrack)
   }
 }
 
@@ -152,10 +163,11 @@ export async function getTracksByCategory(category: string): Promise<Track[]> {
     await ensurePostgresSchema()
     const pg = getPostgres()
     const rows = await pg`SELECT * FROM tracks WHERE category = ${category} AND is_active = 1 ORDER BY created_at DESC`
-    return rows as unknown as Track[]
+    return rows.map(mapTrack)
   } else {
     const db = getSqlite()
-    return db.prepare('SELECT * FROM tracks WHERE category = ? AND is_active = 1 ORDER BY created_at DESC').all(category) as Track[]
+    const rows = db.prepare('SELECT * FROM tracks WHERE category = ? AND is_active = 1 ORDER BY created_at DESC').all(category) as any[]
+    return rows.map(mapTrack)
   }
 }
 
@@ -164,10 +176,11 @@ export async function getTrackById(id: string): Promise<Track | undefined> {
     await ensurePostgresSchema()
     const pg = getPostgres()
     const rows = await pg`SELECT * FROM tracks WHERE id = ${id}`
-    return rows[0] as unknown as Track | undefined
+    return mapTrack(rows[0])
   } else {
     const db = getSqlite()
-    return db.prepare('SELECT * FROM tracks WHERE id = ?').get(id) as Track | undefined
+    const row = db.prepare('SELECT * FROM tracks WHERE id = ?').get(id)
+    return mapTrack(row)
   }
 }
 
