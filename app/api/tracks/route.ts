@@ -21,43 +21,8 @@ export async function GET() {
     }))
     return NextResponse.json(tracks)
   } catch (error) {
-    console.warn('API: Database error, providing mock data for draft:', error)
-    
-    // Временный список треков для черновика, если база недоступна
-    const mockTracks = [
-      {
-        id: 'mock-1',
-        title: 'Солнечный зайчик',
-        category: 'children',
-        description: 'Весёлая детская песня о приключениях солнечного зайчика.',
-        price: 15000,
-        discount: 20,
-        audioUrl: '/uploads/demo/demo-track-1.mp3',
-        coverUrl: ''
-      },
-      {
-        id: 'mock-2',
-        title: 'Мечты о звёздах',
-        category: 'children',
-        description: 'Колыбельная для малышей.',
-        price: 12000,
-        discount: 0,
-        audioUrl: '/uploads/demo/demo-track-2.mp3',
-        coverUrl: ''
-      },
-      {
-        id: 'mock-3',
-        title: 'Дорога домой',
-        category: 'male',
-        description: 'Глубокая баллада о возвращении домой.',
-        price: 25000,
-        discount: 30,
-        audioUrl: '/uploads/demo/demo-track-3.mp3',
-        coverUrl: ''
-      }
-    ]
-    
-    return NextResponse.json(mockTracks)
+    console.error('API Error:', error)
+    return NextResponse.json({ error: String(error) }, { status: 500 })
   }
 }
 
