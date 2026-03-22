@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --accent: 0 206 203; /* #00CECB - Cyan */
+    --accent-glow: 0 206 203;
+    --bg-main: 11 12 16; /* #0B0C10 */
+  }
+
+  body {
+    @apply bg-page text-[#E2E8F0] antialiased selection:bg-accent/30 selection:text-white;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  /* Minimal Luxury Panels */
+  .glass-panel {
+    @apply bg-surface/50 backdrop-blur-2xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)];
+  }
+
+  .glass-panel-accent {
+    @apply bg-surface/80 backdrop-blur-2xl border border-accent/20 shadow-[0_0_50px_rgba(var(--accent-glow),0.15)];
+  }
+
+  .glass-strong {
+    @apply bg-page/80 backdrop-blur-3xl border border-white/10;
+  }
+
+  /* Sleek, aggressive buttons */
+  .btn-main {
+    @apply relative overflow-hidden inline-flex items-center justify-center font-bold tracking-widest text-[13px] uppercase transition-all duration-300 rounded-lg bg-accent text-[#0B0C10] hover:bg-accent-light hover:shadow-[0_0_20px_rgba(var(--accent-glow),0.5)] active:scale-[0.98] border border-transparent;
+  }
+
+  .btn-outline {
+    @apply relative inline-flex items-center justify-center font-bold tracking-widest text-[13px] uppercase transition-all duration-300 rounded-lg border border-[#333] text-[#E2E8F0] hover:border-cyan-400 hover:text-cyan-400 hover:bg-cyan-400/10 active:scale-[0.98];
+  }
+
+  /* Form Inputs (clean, high contrast) */
+  .form-input {
+    @apply w-full bg-[#1F2833] border border-[#2B3847] rounded-lg px-4 py-3.5 text-[#E2E8F0] placeholder-[#94A3B8] focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors font-medium;
+  }
+
+  /* Track Tile */
+  .track-tile {
+    @apply rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/30 hover:shadow-[0_10px_30px_rgba(0,206,203,0.1)];
+  }
+
+  .tile-cover {
+    @apply relative aspect-square bg-[#1F2833] overflow-hidden;
+  }
+
+  /* Catalog Pills */
+  .cat-pill {
+    @apply px-5 py-2.5 rounded-xl text-sm font-semibold text-[#94A3B8] bg-surface border border-[#2B3847] transition-colors whitespace-nowrap;
+  }
+  .cat-pill:hover {
+    @apply text-white bg-surface-raised border-[#4A607A];
+  }
+  .cat-pill.selected {
+    @apply text-[#0B0C10] bg-cyan-400 border-cyan-400 shadow-[0_4px_15px_rgba(0,206,203,0.3)];
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Tenor Sans', sans-serif;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(var(--accent-glow), 0.5), 0 0 40px rgba(var(--accent-glow), 0.3);
+  }
+}
+
+/* Base custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-3d {
+  transform-style: preserve-3d;
+}
+
+/* ── Equalizer ── */
+@keyframes eqBar1 { 0% { height: 4px; } 100% { height: 16px; } }
+@keyframes eqBar2 { 0% { height: 2px; } 100% { height: 18px; } }
+@keyframes eqBar3 { 0% { height: 8px; } 100% { height: 12px; } }
