@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTrackById, updateTrack, deleteTrack, hardDeleteTrack } from '@/lib/db'
+
+export const dynamic = 'force-dynamic'
 import { unlink, writeFile } from 'fs/promises'
 import path from 'path'
 

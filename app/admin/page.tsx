@@ -33,7 +33,7 @@ export default function AdminPage() {
 
   const fetchTracks = async () => {
     try {
-      const res = await fetch('/api/tracks')
+      const res = await fetch('/api/tracks?t=' + Date.now())
       const data = await res.json()
       setTracks(data)
     } catch (e) { /* ignore */ }
