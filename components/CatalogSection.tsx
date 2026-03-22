@@ -9,6 +9,7 @@ interface Track {
   category: string
   description: string
   price: number
+  discount: number
   audioUrl: string
   coverUrl: string
 }
@@ -29,7 +30,12 @@ export default function CatalogSection() {
     fetch('/api/tracks')
       .then(r => r.json())
       .then(data => {
-        setTracks(data)
+        if (Array.isArray(data)) {
+          setTracks(data)
+        } else {
+          console.error('Data is not an array:', data)
+          setTracks([])
+        }
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -53,7 +59,7 @@ export default function CatalogSection() {
             Каталог песен
           </h2>
           <p className="text-[#888] max-w-lg text-[15px] font-medium leading-relaxed">
-            Послушайте демо и нажмите "Связаться" для покупки. Все треки идут с полными авторскими правами.
+            Послушайте демо и нажмите &quot;Связаться&quot; для покупки. Все треки идут с полными авторскими правами.
           </p>
         </div>
 

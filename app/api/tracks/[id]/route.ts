@@ -14,7 +14,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const track = getTrackById(params.id)
+    const track = await getTrackById(params.id)
     if (!track) {
       return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
     }
@@ -70,7 +70,7 @@ export async function PATCH(
       body = await request.json()
     }
 
-    const track = updateTrack(params.id, body)
+    const track = await updateTrack(params.id, body)
 
     if (!track) {
       return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
@@ -93,7 +93,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
-    const track = getTrackById(params.id)
+    const track = await getTrackById(params.id)
     if (!track) {
       return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
     }
@@ -110,7 +110,7 @@ export async function DELETE(
       // Файлы могли быть уже удалены
     }
 
-    hardDeleteTrack(params.id)
+    await hardDeleteTrack(params.id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

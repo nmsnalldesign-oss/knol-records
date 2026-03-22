@@ -35,8 +35,10 @@ yarn-error.log*
 next-env.d.ts
 
 # database
-*.db
+# *.db (Временно разрешаем для черновика)
 
 # uploads (не коммитим загруженные файлы)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+.vercel

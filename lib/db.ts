@@ -1,25 +1,45 @@
 import Database from 'better-sqlite3'
 import path from 'path'
+import postgres from 'postgres'
 
 // ═══════════════════════════════════════════════
-// SQLite База данных — Треки
+// Конфигурация Баз Данных
 // ═══════════════════════════════════════════════
 
 const DB_PATH = path.join(process.cwd(), 'songwriterknol.db')
+const DATABASE_URL = process.env.DATABASE_URL
 
-let db: Database.Database | null = null
+// Инициализация драйверов
+let sqliteDb: Database.Database | null = null
+let sql: any = null // Postgres client
 
-export function getDb(): Database.Database {
-  if (!db) {
-    db = new Database(DB_PATH)
-    db.pragma('journal_mode = WAL')
-    db.pragma('foreign_keys = ON')
-    initializeDb(db)
+const isPostgres = !!DATABASE_URL
+
+// ── Получение экземпляра БД ──
+function getSqlite(): Database.Database {
+  if (!sqliteDb) {
+    sqliteDb = new Database(DB_PATH)
+    sqliteDb.pragma('journal_mode = WAL')
+    sqliteDb.pragma('foreign_keys = ON')
+    initializeSqlite(sqliteDb)
   }
-  return db
+  return sqliteDb
 }
 
-function initializeDb(db: Database.Database) {
+function getPostgres() {
+  if (!sql && DATABASE_URL) {
+    sql = postgres(DATABASE_URL, {
+      ssl: 'require',
+      idle_timeout: 20,
+      max_lifetime: 60 * 30
+    })
+    // Инициализация PostgreSQL будет происходить лениво
+  }
+  return sql
+}
+
+// ── Инициализация Схемы ──
+function initializeSqlite(db: Database.Database) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS tracks (
       id TEXT PRIMARY KEY,
@@ -35,96 +55,68 @@ function initializeDb(db: Database.Database) {
       is_active INTEGER DEFAULT 1
     );
   `)
-
-  // Проверяем наличие колонки discount для существующей БД
-  const columns = db.pragma("table_info('tracks')") as Array<{ name: string }>
-  if (!columns.some((col: any) => col.name === 'discount')) {
-    db.exec('ALTER TABLE tracks ADD COLUMN discount INTEGER DEFAULT 0;')
-  }
-
-  // Добавляем демо-данные, если таблица пустая
+  
   const count = db.prepare('SELECT COUNT(*) as cnt FROM tracks').get() as { cnt: number }
   if (count.cnt === 0) {
     seedDemoData(db)
   }
 }
 
+async function ensurePostgresSchema() {
+  if (!isPostgres) return
+  const pg = getPostgres()
+  try {
+    await pg`
+      CREATE TABLE IF NOT EXISTS tracks (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        category TEXT NOT NULL CHECK(category IN ('children', 'male', 'female')),
+        description TEXT DEFAULT '',
+        price INTEGER DEFAULT 0,
+        discount INTEGER DEFAULT 0,
+        audio_url TEXT NOT NULL,
+        cover_url TEXT DEFAULT '',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+        is_active INTEGER DEFAULT 1
+      );
+    `
+    // Проверка наличия демо-данных
+    const rows = await pg`SELECT count(*) FROM tracks`
+    if (parseInt(rows[0].count) === 0) {
+      await seedPostgresDemo(pg)
+    }
+  } catch (err) {
+    console.error('Postgres Init Error:', err)
+  }
+}
+
+// ── Демо данные ──
+const demoTracks = [
+  { id: 'demo-1', title: 'Солнечный зайчик', category: 'children', price: 15000, discount: 20, audio_url: '/uploads/demo/demo-track-1.mp3', cover_url: '', description: 'Детская песня' },
+  { id: 'demo-2', title: 'Мечты о звёздах', category: 'children', price: 12000, discount: 0, audio_url: '/uploads/demo/demo-track-2.mp3', cover_url: '', description: 'Колыбельная' },
+  { id: 'demo-3', title: 'Дорога домой', category: 'male', price: 25000, discount: 30, audio_url: '/uploads/demo/demo-track-3.mp3', cover_url: '', description: 'Баллада' }
+]
+
 function seedDemoData(db: Database.Database) {
   const insert = db.prepare(`
     INSERT INTO tracks (id, title, category, description, price, discount, audio_url, cover_url)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `)
-
-  const demoTracks = [
-    {
-      id: 'demo-1',
-      title: 'Солнечный зайчик',
-      category: 'children',
-      description: 'Весёлая детская песня о приключениях солнечного зайчика. Идеальна для утренников и детских праздников.',
-      price: 15000,
-      discount: 20,
-      audio_url: '/uploads/demo/demo-track-1.mp3',
-      cover_url: '',
-    },
-    {
-      id: 'demo-2',
-      title: 'Мечты о звёздах',
-      category: 'children',
-      description: 'Колыбельная для малышей. Нежная мелодия и волшебный текст о путешествии к звёздам.',
-      price: 12000,
-      discount: 0,
-      audio_url: '/uploads/demo/demo-track-2.mp3',
-      cover_url: '',
-    },
-    {
-      id: 'demo-3',
-      title: 'Дорога домой',
-      category: 'male',
-      description: 'Глубокая баллада о возвращении домой. Мощный вокал, живые инструменты.',
-      price: 25000,
-      discount: 30,
-      audio_url: '/uploads/demo/demo-track-3.mp3',
-      cover_url: '',
-    },
-    {
-      id: 'demo-4',
-      title: 'Город огней',
-      category: 'male',
-      description: 'Энергичный рок-трек о ночном городе. Драйв и адреналин в каждой ноте.',
-      price: 20000,
-      discount: 0,
-      audio_url: '/uploads/demo/demo-track-4.mp3',
-      cover_url: '',
-    },
-    {
-      id: 'demo-5',
-      title: 'Крылья',
-      category: 'female',
-      description: 'Вдохновляющая поп-баллада о свободе и мечтах. Идеальна для сильного женского вокала.',
-      price: 22000,
-      discount: 0,
-      audio_url: '/uploads/demo/demo-track-5.mp3',
-      cover_url: '',
-    },
-    {
-      id: 'demo-6',
-      title: 'Танцуй со мной',
-      category: 'female',
-      description: 'Зажигательный танцевальный трек. Хитовый припев, современное звучание.',
-      price: 18000,
-      discount: 15,
-      audio_url: '/uploads/demo/demo-track-6.mp3',
-      cover_url: '',
-    },
-  ]
-
-  const insertMany = db.transaction(() => {
-    for (const track of demoTracks) {
-      insert.run(track.id, track.title, track.category, track.description, track.price, track.discount, track.audio_url, track.cover_url)
+  db.transaction(() => {
+    for (const t of demoTracks) {
+      insert.run(t.id, t.title, t.category, t.description, t.price, t.discount, t.audio_url, t.cover_url)
     }
-  })
+  })()
+}
 
-  insertMany()
+async function seedPostgresDemo(pg: any) {
+  for (const t of demoTracks) {
+    await pg`
+      INSERT INTO tracks (id, title, category, description, price, discount, audio_url, cover_url)
+      VALUES (${t.id}, ${t.title}, ${t.category}, ${t.description}, ${t.price}, ${t.discount}, ${t.audio_url}, ${t.cover_url})
+    `
+  }
 }
 
 // ── CRUD операции ──
@@ -143,57 +135,120 @@ export interface Track {
   is_active: number
 }
 
-export function getAllTracks(): Track[] {
-  const db = getDb()
-  return db.prepare('SELECT * FROM tracks WHERE is_active = 1 ORDER BY created_at DESC').all() as Track[]
+export async function getAllTracks(): Promise<Track[]> {
+  if (isPostgres) {
+    await ensurePostgresSchema()
+    const pg = getPostgres()
+    const rows = await pg`SELECT * FROM tracks WHERE is_active = 1 ORDER BY created_at DESC`
+    return rows as unknown as Track[]
+  } else {
+    const db = getSqlite()
+    return db.prepare('SELECT * FROM tracks WHERE is_active = 1 ORDER BY created_at DESC').all() as Track[]
+  }
 }
 
-export function getTracksByCategory(category: string): Track[] {
-  const db = getDb()
-  return db.prepare('SELECT * FROM tracks WHERE category = ? AND is_active = 1 ORDER BY created_at DESC').all(category) as Track[]
+export async function getTracksByCategory(category: string): Promise<Track[]> {
+  if (isPostgres) {
+    await ensurePostgresSchema()
+    const pg = getPostgres()
+    const rows = await pg`SELECT * FROM tracks WHERE category = ${category} AND is_active = 1 ORDER BY created_at DESC`
+    return rows as unknown as Track[]
+  } else {
+    const db = getSqlite()
+    return db.prepare('SELECT * FROM tracks WHERE category = ? AND is_active = 1 ORDER BY created_at DESC').all(category) as Track[]
+  }
 }
 
-export function getTrackById(id: string): Track | undefined {
-  const db = getDb()
-  return db.prepare('SELECT * FROM tracks WHERE id = ?').get(id) as Track | undefined
+export async function getTrackById(id: string): Promise<Track | undefined> {
+  if (isPostgres) {
+    await ensurePostgresSchema()
+    const pg = getPostgres()
+    const rows = await pg`SELECT * FROM tracks WHERE id = ${id}`
+    return rows[0] as unknown as Track | undefined
+  } else {
+    const db = getSqlite()
+    return db.prepare('SELECT * FROM tracks WHERE id = ?').get(id) as Track | undefined
+  }
 }
 
-export function createTrack(track: Omit<Track, 'created_at' | 'updated_at' | 'is_active'>): Track {
-  const db = getDb()
-  db.prepare(`
-    INSERT INTO tracks (id, title, category, description, price, discount, audio_url, cover_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(track.id, track.title, track.category, track.description, track.price, track.discount, track.audio_url, track.cover_url)
-  return getTrackById(track.id) as Track
+export async function createTrack(track: Omit<Track, 'created_at' | 'updated_at' | 'is_active'>): Promise<Track> {
+  if (isPostgres) {
+    await ensurePostgresSchema()
+    const pg = getPostgres()
+    await pg`
+      INSERT INTO tracks (id, title, category, description, price, discount, audio_url, cover_url)
+      VALUES (${track.id}, ${track.title}, ${track.category}, ${track.description}, ${track.price}, ${track.discount}, ${track.audio_url}, ${track.cover_url})
+    `
+    const res = await getTrackById(track.id)
+    return res as Track
+  } else {
+    const db = getSqlite()
+    db.prepare(`
+      INSERT INTO tracks (id, title, category, description, price, discount, audio_url, cover_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(track.id, track.title, track.category, track.description, track.price, track.discount, track.audio_url, track.cover_url)
+    return getTrackById(track.id) as Promise<Track> as unknown as Track
+  }
 }
 
-export function updateTrack(id: string, data: Partial<Omit<Track, 'id' | 'created_at'>>): Track | undefined {
-  const db = getDb()
-  const fields: string[] = []
-  const values: unknown[] = []
+export async function updateTrack(id: string, data: Partial<Omit<Track, 'id' | 'created_at'>>): Promise<Track | undefined> {
+  if (isPostgres) {
+    await ensurePostgresSchema()
+    const pg = getPostgres()
+    
+    // В PostgreSQL обновление через pg-client немного отличается
+    const updateData: any = { ...data, updated_at: new Date() }
+    
+    // Фильтруем undefined
+    const keys = Object.keys(updateData).filter(key => updateData[key] !== undefined)
+    
+    if (keys.length === 0) return getTrackById(id)
 
-  if (data.title !== undefined) { fields.push('title = ?'); values.push(data.title) }
-  if (data.category !== undefined) { fields.push('category = ?'); values.push(data.category) }
-  if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description) }
-  if (data.price !== undefined) { fields.push('price = ?'); values.push(data.price) }
-  if (data.discount !== undefined) { fields.push('discount = ?'); values.push(data.discount) }
-  if (data.audio_url !== undefined) { fields.push('audio_url = ?'); values.push(data.audio_url) }
-  if (data.cover_url !== undefined) { fields.push('cover_url = ?'); values.push(data.cover_url) }
-  if (data.is_active !== undefined) { fields.push('is_active = ?'); values.push(data.is_active) }
+    // Простой паттерн для динамического UPDATE в postgres.js
+    await pg`
+      UPDATE tracks 
+      SET ${pg(updateData, ...keys)}
+      WHERE id = ${id}
+    `
+    return getTrackById(id)
+  } else {
+    const db = getSqlite()
+    const fields: string[] = []
+    const values: unknown[] = []
 
-  fields.push("updated_at = datetime('now')")
-  values.push(id)
+    if (data.title !== undefined) { fields.push('title = ?'); values.push(data.title) }
+    if (data.category !== undefined) { fields.push('category = ?'); values.push(data.category) }
+    if (data.description !== undefined) { fields.push('description = ?'); values.push(data.description) }
+    if (data.price !== undefined) { fields.push('price = ?'); values.push(data.price) }
+    if (data.discount !== undefined) { fields.push('discount = ?'); values.push(data.discount) }
+    if (data.audio_url !== undefined) { fields.push('audio_url = ?'); values.push(data.audio_url) }
+    if (data.cover_url !== undefined) { fields.push('cover_url = ?'); values.push(data.cover_url) }
+    if (data.is_active !== undefined) { fields.push('is_active = ?'); values.push(data.is_active) }
 
-  db.prepare(`UPDATE tracks SET ${fields.join(', ')} WHERE id = ?`).run(...values)
-  return getTrackById(id)
+    fields.push("updated_at = datetime('now')")
+    values.push(id)
+
+    db.prepare(`UPDATE tracks SET ${fields.join(', ')} WHERE id = ?`).run(...values)
+    return getTrackById(id)
+  }
 }
 
-export function deleteTrack(id: string): void {
-  const db = getDb()
-  db.prepare('UPDATE tracks SET is_active = 0 WHERE id = ?').run(id)
+export async function deleteTrack(id: string): Promise<void> {
+  if (isPostgres) {
+    const pg = getPostgres()
+    await pg`UPDATE tracks SET is_active = 0 WHERE id = ${id}`
+  } else {
+    const db = getSqlite()
+    db.prepare('UPDATE tracks SET is_active = 0 WHERE id = ?').run(id)
+  }
 }
 
-export function hardDeleteTrack(id: string): void {
-  const db = getDb()
-  db.prepare('DELETE FROM tracks WHERE id = ?').run(id)
+export async function hardDeleteTrack(id: string): Promise<void> {
+  if (isPostgres) {
+    const pg = getPostgres()
+    await pg`DELETE FROM tracks WHERE id = ${id}`
+  } else {
+    const db = getSqlite()
+    db.prepare('DELETE FROM tracks WHERE id = ?').run(id)
+  }
 }
