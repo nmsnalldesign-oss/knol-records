@@ -98,14 +98,18 @@ export default function AdminPage() {
       resetForm()
       await fetchTracks()
     } catch (err) {
-      alert('Ошибка при сохранении')
+      alert('Ошибка при сохранении: ' + (err instanceof Error ? err.message : String(err)))
     }
     setSubmitting(false)
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Удалить трек?')) return
-    await fetch(`/api/tracks/${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/tracks/${id}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const error = await res.json()
+      alert('Ошибка при удалении: ' + (error.error || res.statusText))
+    }
     await fetchTracks()
   }
 
