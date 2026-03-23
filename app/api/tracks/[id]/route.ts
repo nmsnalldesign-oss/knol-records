@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getTrackById, updateTrack, deleteTrack, hardDeleteTrack } from '@/lib/db'
+import { getTrackById, updateTrack, hardDeleteTrack } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
-import { unlink, writeFile } from 'fs/promises'
-import path from 'path'
 
 // ═══════════════════════════════════════════════
-// API: GET /api/tracks/[id] — Получить трек по ID
-// API: PATCH /api/tracks/[id] — Обновить трек
-// API: DELETE /api/tracks/[id] — Удалить трек
+// API: GET /api/tracks/[id]
+// API: PATCH /api/tracks/[id]
+// API: DELETE /api/tracks/[id]
 // ═══════════════════════════════════════════════
+
+function getPathFromUrl(url: string) {
+  if (!url) return null
+  const parts = url.split('/media/')
+  return parts.length > 1 ? parts[1] : null
+}
 
 export async function GET(
   request: NextRequest,
@@ -23,7 +28,7 @@ export async function GET(
     return NextResponse.json({ track })
   } catch (error) {
     console.error('Error fetching track:', error)
-    return NextResponse.json({ error: 'Ошибка' }, { status: 500 })
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
   }
 }
 
@@ -39,7 +44,6 @@ export async function PATCH(
 
     let body: any = {}
     
-    // Пытаемся распарсить как FormData (с файлами)
     try {
       const formData = await request.formData()
       if (formData.has('title')) body.title = formData.get('title')
@@ -50,44 +54,45 @@ export async function PATCH(
 
       const coverFile = formData.get('cover') as File | null
       const audioFile = formData.get('audio') as File | null
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
 
+      // Обновление обложки в Storage
       if (coverFile && coverFile.size > 0) {
         const coverExt = coverFile.name.split('.').pop() || 'jpg'
-        const coverFileName = `${params.id}-cover-${Date.now()}.${coverExt}`
-        body.cover_url = `/uploads/${coverFileName}`
+        const coverFilePath = `covers/${params.id}-${Date.now()}.${coverExt}`
         
-        try {
-          if (!process.env.VERCEL) {
-            const coverBuffer = Buffer.from(await coverFile.arrayBuffer())
-            await writeFile(path.join(uploadsDir, coverFileName), coverBuffer)
-          }
-        } catch (e) {
-          console.warn('API: Patch cover file write failed', e)
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(coverFilePath, coverFile)
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('media')
+            .getPublicUrl(coverFilePath)
+          body.cover_url = publicUrl
         }
       }
       
+      // Обновление аудио в Storage
       if (audioFile && audioFile.size > 0) {
         const audioExt = audioFile.name.split('.').pop() || 'mp3'
-        const audioFileName = `${params.id}-${Date.now()}.${audioExt}`
-        body.audio_url = `/uploads/${audioFileName}`
+        const audioFilePath = `audio/${params.id}-${Date.now()}.${audioExt}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('media')
+          .upload(audioFilePath, audioFile)
 
-        try {
-          if (!process.env.VERCEL) {
-            const audioBuffer = Buffer.from(await audioFile.arrayBuffer())
-            await writeFile(path.join(uploadsDir, audioFileName), audioBuffer)
-          }
-        } catch (e) {
-          console.warn('API: Patch audio file write failed', e)
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('media')
+            .getPublicUrl(audioFilePath)
+          body.audio_url = publicUrl
         }
       }
     } catch {
-      // Иначе парсим как обычный JSON
       body = await request.json()
     }
 
     const track = await updateTrack(params.id, body)
-
     if (!track) {
       return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
     }
@@ -114,18 +119,24 @@ export async function DELETE(
       return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
     }
 
-    // Удаляем файлы с диска
-    try {
-      if (track.audio_url && !track.audio_url.includes('demo')) {
-        await unlink(path.join(process.cwd(), 'public', track.audio_url))
+    // 1. Удаляем файлы из Supabase Storage
+    const filesToDelete: string[] = []
+    const audioPath = getPathFromUrl(track.audio_url)
+    const coverPath = getPathFromUrl(track.cover_url)
+    
+    if (audioPath) filesToDelete.push(audioPath)
+    if (coverPath) filesToDelete.push(coverPath)
+
+    if (filesToDelete.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from('media')
+        .remove(filesToDelete)
+      if (storageError) {
+        console.warn('Storage deletion error (ignoring):', storageError)
       }
-      if (track.cover_url && !track.cover_url.includes('demo')) {
-        await unlink(path.join(process.cwd(), 'public', track.cover_url))
-      }
-    } catch {
-      // Файлы могли быть уже удалены
     }
 
+    // 2. Удаляем запись из БД
     await hardDeleteTrack(params.id)
 
     return NextResponse.json({ success: true })

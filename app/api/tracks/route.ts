@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllTracks, createTrack, type Track } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
+import { v4 as uuidv4 } from 'uuid'
 
 export const dynamic = 'force-dynamic'
-import { v4 as uuidv4 } from 'uuid'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 
 // ═══════════════════════════════════════════════
 // API: GET /api/tracks — Получить все треки
-// API: POST /api/tracks — Создать новый трек
+// API: POST /api/tracks — Создать новый трек (через Storage)
 // ═══════════════════════════════════════════════
 
 export async function GET() {
   try {
     const tracksData = await getAllTracks()
+    // Мапим для фронтенда (если он еще использует camelCase)
     const tracks = tracksData.map(t => ({
       ...t,
       audioUrl: t.audio_url,
@@ -21,7 +21,7 @@ export async function GET() {
     }))
     return NextResponse.json(tracks)
   } catch (error) {
-    console.error('API Error:', error)
+    console.error('API Error (GET):', error)
     return NextResponse.json({ error: String(error) }, { status: 500 })
   }
 }
@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-
     const title = formData.get('title') as string
     const category = formData.get('category') as string
     const description = formData.get('description') as string
@@ -46,57 +45,52 @@ export async function POST(request: NextRequest) {
 
     if (!title || !category || !audioFile) {
       return NextResponse.json(
-        { error: 'Обязательные поля: title, category, audio' },
+        { error: 'Обязательные поля: Название, Категория и Аудиофайл' },
         { status: 400 }
       )
     }
 
-    // Создаём директорию для загрузок (пропускаем или игнорим ошибку на Vercel)
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-    try {
-      if (!process.env.VERCEL) {
-        await mkdir(uploadsDir, { recursive: true })
-      }
-    } catch (e) {
-      console.warn('API: Could not create uploads directory', e)
-    }
-
     const trackId = uuidv4()
 
-    // Сохраняем аудиофайл
+    // 1. Загружаем аудиофайл в Supabase Storage
     const audioExt = audioFile.name.split('.').pop() || 'mp3'
-    const audioFileName = `${trackId}.${audioExt}`
-    const audioUrl = `/uploads/${audioFileName}`
+    const audioFilePath = `audio/${trackId}.${audioExt}`
     
-    try {
-      if (!process.env.VERCEL) {
-        const audioBuffer = Buffer.from(await audioFile.arrayBuffer())
-        await writeFile(path.join(uploadsDir, audioFileName), audioBuffer)
-      } else {
-        console.log('API: Running on Vercel, skipping disk write for audio')
-      }
-    } catch (e) {
-      console.warn('API: File write failed (expected on Vercel)', e)
+    const { error: audioUploadError } = await supabase.storage
+      .from('media')
+      .upload(audioFilePath, audioFile)
+
+    if (audioUploadError) {
+      console.error('Audio Upload Error:', audioUploadError)
+      return NextResponse.json({ error: 'Ошибка загрузки аудиофайла' }, { status: 500 })
     }
 
-    // Сохраняем обложку (если есть)
+    const { data: { publicUrl: audioUrl } } = supabase.storage
+      .from('media')
+      .getPublicUrl(audioFilePath)
+
+    // 2. Загружаем обложку (если есть)
     let coverUrl = ''
     if (coverFile && coverFile.size > 0) {
       const coverExt = coverFile.name.split('.').pop() || 'jpg'
-      const coverFileName = `${trackId}-cover.${coverExt}`
-      coverUrl = `/uploads/${coverFileName}`
+      const coverFilePath = `covers/${trackId}.${coverExt}`
       
-      try {
-        if (!process.env.VERCEL) {
-          const coverBuffer = Buffer.from(await coverFile.arrayBuffer())
-          await writeFile(path.join(uploadsDir, coverFileName), coverBuffer)
-        }
-      } catch (e) {
-        console.warn('API: Cover file write failed', e)
+      const { error: coverUploadError } = await supabase.storage
+        .from('media')
+        .upload(coverFilePath, coverFile)
+
+      if (coverUploadError) {
+        console.warn('Cover Upload Error:', coverUploadError)
+        // Не фатально, можем продолжить без обложки
+      } else {
+        const { data: { publicUrl: cUrl } } = supabase.storage
+          .from('media')
+          .getPublicUrl(coverFilePath)
+        coverUrl = cUrl
       }
     }
 
-    // Создаём запись в БД
+    // 3. Создаём запись в БД
     const track = await createTrack({
       id: trackId,
       title,
@@ -108,9 +102,13 @@ export async function POST(request: NextRequest) {
       cover_url: coverUrl,
     })
 
+    if (!track) {
+      return NextResponse.json({ error: 'Ошибка записи в базу данных' }, { status: 500 })
+    }
+
     return NextResponse.json({ track }, { status: 201 })
   } catch (error) {
-    console.error('Error creating track:', error)
-    return NextResponse.json({ error: 'Ошибка создания трека' }, { status: 500 })
+    console.error('Error in POST /api/tracks:', error)
+    return NextResponse.json({ error: 'Ошибка сервера при создании трека' }, { status: 500 })
   }
 }
