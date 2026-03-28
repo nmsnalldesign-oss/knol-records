@@ -66,7 +66,7 @@ export async function getTrackById(id: string): Promise<Track | undefined> {
 export async function createTrack(track: Omit<Track, 'created_at' | 'is_active'>) {
   const { data, error } = await supabase
     .from('tracks')
-    .insert([track])
+    .insert([{ ...track, is_active: true }])
     .select()
     .single()
 
