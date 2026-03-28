@@ -63,22 +63,17 @@ export async function getTrackById(id: string): Promise<Track | undefined> {
   return data as Track
 }
 
-export async function createTrack(track: Omit<Track, 'created_at' | 'is_active'>): Promise<Track | null> {
+export async function createTrack(track: Omit<Track, 'created_at' | 'is_active'>) {
   const { data, error } = await supabase
     .from('tracks')
     .insert([track])
     .select()
     .single()
 
-  if (error) {
-    console.error('Error creating track:', error)
-    return null
-  }
-
-  return data as Track
+  return { data, error }
 }
 
-export async function updateTrack(id: string, data: Partial<Omit<Track, 'id' | 'created_at'>>): Promise<Track | null> {
+export async function updateTrack(id: string, data: Partial<Omit<Track, 'id' | 'created_at'>>) {
   const { data: updatedData, error } = await supabase
     .from('tracks')
     .update(data)
@@ -86,12 +81,7 @@ export async function updateTrack(id: string, data: Partial<Omit<Track, 'id' | '
     .select()
     .single()
 
-  if (error) {
-    console.error('Error updating track:', error)
-    return null
-  }
-
-  return updatedData as Track
+  return { data: updatedData, error }
 }
 
 export async function deleteTrack(id: string): Promise<void> {

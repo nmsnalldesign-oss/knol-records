@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { usePlayerStore } from '@/lib/playerStore'
 import { formatPrice } from '@/lib/utils'
 
@@ -49,11 +50,12 @@ export default function TrackCard({ track }: { track: Track }) {
         {/* Cover */}
         <div className="relative w-full aspect-square bg-[#050505] shrink-0">
           {track.coverUrl ? (
-            <img
+            <Image
               src={track.coverUrl}
               alt={track.title}
-              loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-[#050505]">
@@ -115,18 +117,18 @@ export default function TrackCard({ track }: { track: Track }) {
           </div>
 
           <div className="flex flex-col gap-3 mt-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex flex-col min-w-0">
                 {oldPrice && (
-                  <span className="text-[11px] text-[#555] line-through font-bold">{formatPrice(oldPrice)}</span>
+                  <span className="text-[10px] sm:text-[11px] text-[#555] line-through font-bold truncate">{formatPrice(oldPrice)}</span>
                 )}
-                <span className="text-white font-bold tracking-wide text-[20px]">{formatPrice(track.price)}</span>
+                <span className="text-white font-bold tracking-wide text-lg sm:text-[20px] truncate">{formatPrice(track.price)}</span>
               </div>
               <a
                 href={vkLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-transparent border border-cyan-400/50 text-cyan-400 font-bold hover:border-cyan-400 hover:text-white hover:bg-cyan-400/20 transition-all hover:drop-shadow-[0_0_15px_rgba(0,206,203,0.8)] focus:outline-none"
+              className="flex items-center justify-center shrink-0 gap-2 px-4 py-2 sm:px-6 sm:py-2.5 rounded-2xl bg-transparent border border-cyan-400/50 text-cyan-400 text-sm sm:text-base font-bold hover:border-cyan-400 hover:text-white hover:bg-cyan-400/20 transition-all hover:drop-shadow-[0_0_15px_rgba(0,206,203,0.8)] focus:outline-none"
             >
                 Написать
               </a>

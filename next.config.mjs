@@ -6,6 +6,14 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'gwxaymepeyxxwdmhlkgp.supabase.co',
+      },
+    ],
+  },
   // Пропускаем ESLint при сборке (иначе Vercel не деплоится)
   eslint: {
     ignoreDuringBuilds: true,

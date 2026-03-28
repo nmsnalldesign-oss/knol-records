@@ -36,10 +36,8 @@ export default function Footer() {
               <span>ИНН XXXXXXXXXXXX</span>
             </div>
           </div>
-
           <div className="flex flex-wrap gap-x-8 gap-y-4">
-            <a href="/oferta" className="hover:text-cyan-400 transition-colors font-semibold">Публичная оферта</a>
-            <a href="/privacy" className="hover:text-cyan-400 transition-colors font-semibold">Политика конфиденциальности</a>
+            {/* Ссылки убраны по просьбе */}
           </div>
 
           <div className="font-bold tracking-wider opacity-60">© {new Date().getFullYear()}</div>

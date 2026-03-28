@@ -4,6 +4,12 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatPrice } from '@/lib/utils'
 
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim()
+const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim()
+const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
 interface Track {
   id: string
   title: string
@@ -17,6 +23,7 @@ interface Track {
 
 export default function AdminPage() {
   const router = useRouter()
+  // ... (остальные стейты без изменений)
   const [tracks, setTracks] = useState<Track[]>([])
   const [showForm, setShowForm] = useState(false)
   const [editingTrack, setEditingTrack] = useState<Track | null>(null)
@@ -24,7 +31,6 @@ export default function AdminPage() {
   const [submitting, setSubmitting] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
-  // Form state
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('children')
   const [description, setDescription] = useState('')
@@ -50,6 +56,7 @@ export default function AdminPage() {
     setDiscount('0')
     setEditingTrack(null)
     setShowForm(false)
+    if (formRef.current) formRef.current.reset()
   }
 
   const startEdit = (track: Track) => {
@@ -60,7 +67,6 @@ export default function AdminPage() {
     setDiscount(String(track.discount ?? 0))
     setEditingTrack(track)
     setShowForm(true)
-    // Scroll to form
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
   }
 
@@ -69,36 +75,60 @@ export default function AdminPage() {
     setSubmitting(true)
 
     const formData = new FormData(e.currentTarget)
+    const audioFile = formData.get('audio') as File | null
+    const coverFile = formData.get('cover') as File | null
+    const trackId = editingTrack ? editingTrack.id : crypto.randomUUID()
 
     try {
-      if (editingTrack) {
-        // PATCH — update existing
-        formData.set('title', title)
-        formData.set('category', category)
-        formData.set('description', description)
-        formData.set('price', price)
-        formData.set('discount', discount)
-        
-        await fetch(`/api/tracks/${editingTrack.id}`, {
-          method: 'PATCH',
-          body: formData,
-        })
-      } else {
-        // POST — create new
-        formData.set('title', title)
-        formData.set('category', category)
-        formData.set('description', description)
-        formData.set('price', price)
-        formData.set('discount', discount)
-        await fetch('/api/tracks', {
-          method: 'POST',
-          body: formData,
-        })
+      let finalAudioUrl = editingTrack?.audioUrl || ''
+      let finalCoverUrl = editingTrack?.coverUrl || ''
+
+      // 1. Прямая загрузка АУДИО в Supabase (в обход Vercel Payload Limit)
+      if (audioFile && audioFile.size > 0) {
+        const ext = audioFile.name.split('.').pop()
+        const path = `audio/${trackId}-${Date.now()}.${ext}`
+        const { error: uploadError } = await supabase.storage.from('media').upload(path, audioFile)
+        if (uploadError) throw new Error('Ошибка загрузки аудио: ' + uploadError.message)
+        const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
+        finalAudioUrl = publicUrl
       }
+
+      // 2. Прямая загрузка ОБЛОЖКИ в Supabase
+      if (coverFile && coverFile.size > 0) {
+        const ext = coverFile.name.split('.').pop()
+        const path = `covers/${trackId}-${Date.now()}.${ext}`
+        const { error: uploadError } = await supabase.storage.from('media').upload(path, coverFile)
+        if (uploadError) throw new Error('Ошибка загрузки обложки: ' + uploadError.message)
+        const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
+        finalCoverUrl = publicUrl
+      }
+
+      // 3. Отправляем только метаданные (текст и ссылки) на наш API
+      const payload = {
+        title,
+        category,
+        description,
+        price: Number(price),
+        discount: Number(discount),
+        audio_url: finalAudioUrl,
+        cover_url: finalCoverUrl
+      }
+
+      const res = await fetch(`/api/tracks${editingTrack ? `/${editingTrack.id}` : ''}`, {
+        method: editingTrack ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingTrack ? payload : { ...payload, id: trackId }),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.error || 'Ошибка сохранения в базу')
+      }
+
       resetForm()
       await fetchTracks()
     } catch (err) {
-      alert('Ошибка при сохранении: ' + (err instanceof Error ? err.message : String(err)))
+      alert(err instanceof Error ? err.message : String(err))
     }
     setSubmitting(false)
   }

@@ -4,12 +4,6 @@ import { supabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
-// ═══════════════════════════════════════════════
-// API: GET /api/tracks/[id]
-// API: PATCH /api/tracks/[id]
-// API: DELETE /api/tracks/[id]
-// ═══════════════════════════════════════════════
-
 function getPathFromUrl(url: string) {
   if (!url) return null
   const parts = url.split('/media/')
@@ -22,9 +16,7 @@ export async function GET(
 ) {
   try {
     const track = await getTrackById(params.id)
-    if (!track) {
-      return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
-    }
+    if (!track) return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
     return NextResponse.json({ track })
   } catch (error) {
     console.error('Error fetching track:', error)
@@ -42,60 +34,19 @@ export async function PATCH(
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
     }
 
-    let body: any = {}
+    const body = await request.json()
+    // В новой архитектуре файлы уже загружены фронтендом в Storage, 
+    // поэтому PATCH просто обновляет ссылки в БД.
     
-    try {
-      const formData = await request.formData()
-      if (formData.has('title')) body.title = formData.get('title')
-      if (formData.has('category')) body.category = formData.get('category')
-      if (formData.has('description')) body.description = formData.get('description')
-      if (formData.has('price')) body.price = parseInt(formData.get('price') as string) || 0
-      if (formData.has('discount')) body.discount = parseInt(formData.get('discount') as string) || 0
-
-      const coverFile = formData.get('cover') as File | null
-      const audioFile = formData.get('audio') as File | null
-
-      // Обновление обложки в Storage
-      if (coverFile && coverFile.size > 0) {
-        const coverExt = coverFile.name.split('.').pop() || 'jpg'
-        const coverFilePath = `covers/${params.id}-${Date.now()}.${coverExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('media')
-          .upload(coverFilePath, coverFile)
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('media')
-            .getPublicUrl(coverFilePath)
-          body.cover_url = publicUrl
-        }
-      }
-      
-      // Обновление аудио в Storage
-      if (audioFile && audioFile.size > 0) {
-        const audioExt = audioFile.name.split('.').pop() || 'mp3'
-        const audioFilePath = `audio/${params.id}-${Date.now()}.${audioExt}`
-        
-        const { error: uploadError } = await supabase.storage
-          .from('media')
-          .upload(audioFilePath, audioFile)
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('media')
-            .getPublicUrl(audioFilePath)
-          body.audio_url = publicUrl
-        }
-      }
-    } catch {
-      body = await request.json()
+    const { data: track, error: dbError } = await updateTrack(params.id, body)
+    if (dbError) {
+      console.error('Error in Supabase PATCH:', dbError)
+      return NextResponse.json({ 
+        error: 'Ошибка обновления в базе данных: ' + dbError.message,
+        details: dbError
+      }, { status: 500 })
     }
-
-    const track = await updateTrack(params.id, body)
-    if (!track) {
-      return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
-    }
+    if (!track) return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
 
     return NextResponse.json({ track })
   } catch (error) {
@@ -115,9 +66,7 @@ export async function DELETE(
     }
 
     const track = await getTrackById(params.id)
-    if (!track) {
-      return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
-    }
+    if (!track) return NextResponse.json({ error: 'Трек не найден' }, { status: 404 })
 
     // 1. Удаляем файлы из Supabase Storage
     const filesToDelete: string[] = []
@@ -131,9 +80,7 @@ export async function DELETE(
       const { error: storageError } = await supabase.storage
         .from('media')
         .remove(filesToDelete)
-      if (storageError) {
-        console.warn('Storage deletion error (ignoring):', storageError)
-      }
+      if (storageError) console.warn('Storage deletion error:', storageError)
     }
 
     // 2. Удаляем запись из БД

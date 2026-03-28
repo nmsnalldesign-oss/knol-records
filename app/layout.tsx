@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { YandexMetrika } from '@/components/YandexMetrika'
-
 export const metadata: Metadata = {
   title: 'СонграйтерKnol — Авторские песни на продажу',
   description: 'Покупайте готовые авторские песни с полной передачей прав. Тексты, аранжировки и продакшн студийного качества. Детские, мужские, женские треки.',
@@ -33,7 +31,6 @@ export default function RootLayout({
     <html lang="ru" className="dark">
       <body className="antialiased">
         {children}
-        <YandexMetrika />
       </body>
     </html>
   )
