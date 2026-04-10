@@ -51,8 +51,7 @@ export function getCategoryIcon(category: string): string {
  * Генерация ссылки для обсуждения покупки в ВК
  */
 export function getVkContactLink(trackTitle: string): string {
-  // TODO: Замени ЗАГЛУШКА_ID_ВК на реальный ID пользователя/сообщества ВК
-  const vkId = 'ЗАГЛУШКА_ID_ВК'
+  const vkId = 'knolrecords'
   const message = encodeURIComponent(`Здравствуйте! Меня интересует трек: ${trackTitle}`)
   return `https://vk.me/${vkId}?text=${message}`
 }
