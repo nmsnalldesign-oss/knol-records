@@ -1,6 +1,38 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
+const DEFAULT_ABOUT = {
+  title: 'Больше, чем просто слова',
+  text1: 'Я — Иван Кноль, профессиональный сонграйтер и автор песен. За моими плечами огромный опыт написания музыки для артистов, контент-мейкеров, брендов и театральных постановок.',
+  text2: 'Каждая песня в каталоге или написанная под заказ — это продукт полного цикла. Текст, вокал, аранжировка, сведение и мастеринг. Вы получаете материал, который сразу готов к дистрибуции на любые площадки.',
+}
+
 export default function AboutSection() {
+  const [about, setAbout] = useState(DEFAULT_ABOUT)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.json())
+      .then(data => {
+        if (!Array.isArray(data)) return
+        const row = data.find((item: any) => item.key === 'about_section')
+        if (row?.value) {
+          setAbout({
+            title: row.value.title || DEFAULT_ABOUT.title,
+            text1: row.value.text1 || DEFAULT_ABOUT.text1,
+            text2: row.value.text2 || DEFAULT_ABOUT.text2,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  // Split title into two parts at the last space before the second word group
+  const titleParts = about.title.split(/,|—|\n/)
+  const titleMain = titleParts[0]?.trim() || about.title
+  const titleHighlight = titleParts.slice(1).join(' ').trim()
+
   return (
     <section id="about" className="relative py-24 px-5 sm:px-8 border-t border-white/5 bg-[#0A0C10]">
       {/* Decorative glow */}
@@ -14,18 +46,20 @@ export default function AboutSection() {
             О проекте
           </div>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-white mb-8 tracking-tight">
-            Больше, чем <br/>
-            <span className="text-cyan-400 drop-shadow-[0_0_15px_rgba(0,206,203,0.5)]">
-              просто слова
-            </span>
+            {titleHighlight ? (
+              <>
+                {titleMain},<br />
+                <span className="text-cyan-400 drop-shadow-[0_0_15px_rgba(0,206,203,0.5)]">
+                  {titleHighlight}
+                </span>
+              </>
+            ) : (
+              about.title
+            )}
           </h2>
           <div className="space-y-6 text-[#94A3B8] text-lg leading-relaxed font-medium">
-            <p>
-              Я — Иван Кноль, профессиональный сонграйтер и автор песен. За моими плечами огромный опыт написания музыки для артистов, контент-мейкеров, брендов и театральных постановок.
-            </p>
-            <p>
-              Каждая песня в каталоге или написанная под заказ — это продукт полного цикла. Текст, вокал, аранжировка, сведение и мастеринг. Вы получаете материал, который сразу готов к дистрибуции на любые площадки.
-            </p>
+            <p>{about.text1}</p>
+            <p>{about.text2}</p>
           </div>
           
           <div className="mt-10 grid grid-cols-2 gap-6 sm:gap-10">
