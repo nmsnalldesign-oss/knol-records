@@ -33,7 +33,6 @@ export default function CatalogSection() {
         if (Array.isArray(data)) {
           setTracks(data)
         } else {
-          console.error('Data is not an array:', data)
           setTracks([])
         }
         setLoading(false)
@@ -49,7 +48,6 @@ export default function CatalogSection() {
   return (
     <section id="catalog" className="relative py-24 px-5 sm:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Catalog Header - Clean Light Theme */}
         <div className="mb-10 text-center sm:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-cyan-400/30 bg-cyan-400/10 text-cyan-400 text-[10px] font-bold tracking-wider uppercase mb-3 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
@@ -63,7 +61,6 @@ export default function CatalogSection() {
           </p>
         </div>
 
-        {/* Category tabs */}
         <div className="flex gap-2 mb-10 overflow-x-auto pb-2">
           {categories.map(cat => {
             const count =
@@ -84,7 +81,6 @@ export default function CatalogSection() {
           })}
         </div>
 
-        {/* Grid — square cards */}
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {[...Array(8)].map((_, i) => (
@@ -94,14 +90,12 @@ export default function CatalogSection() {
         ) : filtered.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             {filtered.map(track => (
-              <TrackCard key={track.id} track={track} />
+              <TrackCard key={track.id} track={track} tracksList={filtered} />
             ))}
           </div>
         ) : (
           <div className="text-center py-20 text-[#888]">
-            <div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin mx-auto mb-4" />
             <div className="font-semibold text-lg text-white">Треки загружаются</div>
-            <div className="text-sm mt-1">Осталось совсем чуть-чуть...</div>
           </div>
         )}
       </div>
