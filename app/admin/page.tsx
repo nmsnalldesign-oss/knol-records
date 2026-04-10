@@ -124,7 +124,7 @@ export default function AdminPage() {
     const formData = new FormData(e.currentTarget)
     const audioFile = formData.get('audio') as File | null
     const coverFile = formData.get('cover') as File | null
-    const trackId = editingTrack ? editingTrack.id : crypto.randomUUID()
+    const trackId = editingTrack ? editingTrack.id : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16) })
 
     try {
       let finalAudioUrl = editingTrack?.audioUrl || ''
