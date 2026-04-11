@@ -56,8 +56,8 @@ export default function HeroSection() {
         const row = data.find((item: any) => item.key === 'hero_banners')
         if (row?.value && Array.isArray(row.value)) {
           const merged = DEFAULT_BANNERS.map((def, i) => ({
-            title: row.value[i]?.title || def.title,
-            text: row.value[i]?.text || def.text,
+            title: (row.value[i]?.title || def.title).replace(/d14$/g, '').trim(),
+            text: (row.value[i]?.text || def.text).replace(/ ляля$/g, '.').trim(),
             action: row.value[i]?.action || def.action,
           }))
           setBanners(merged)
