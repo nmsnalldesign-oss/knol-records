@@ -49,21 +49,7 @@ export default function HeroSection() {
   const [banners, setBanners] = useState(DEFAULT_BANNERS)
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then(r => r.json())
-      .then(data => {
-        if (!Array.isArray(data)) return
-        const row = data.find((item: any) => item.key === 'hero_banners')
-        if (row?.value && Array.isArray(row.value)) {
-          const merged = DEFAULT_BANNERS.map((def, i) => ({
-            title: (row.value[i]?.title || def.title).replace(/d14$/g, '').trim(),
-            text: (row.value[i]?.text || def.text).replace(/ ляля$/g, '.').trim(),
-            action: row.value[i]?.action || def.action,
-          }))
-          setBanners(merged)
-        }
-      })
-      .catch(() => {})
+    // Баннеры теперь захардкожены, так как мы убрали вкладку настроек из админки.
   }, [])
 
   useEffect(() => {
