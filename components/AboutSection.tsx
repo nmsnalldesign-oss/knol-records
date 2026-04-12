@@ -34,7 +34,7 @@ export default function AboutSection() {
   const titleHighlight = titleParts.slice(1).join(' ').trim()
 
   return (
-    <section id="about" className="relative py-24 px-5 sm:px-8 border-t border-white/5 bg-[#0A0C10]">
+    <section id="about" className="relative py-12 sm:py-24 px-5 sm:px-8 border-t border-white/5 bg-[#0A0C10]">
       {/* Decorative glow */}
       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
 

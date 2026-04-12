@@ -134,7 +134,7 @@ export default function GlobalAudioPlayer() {
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[10px] sm:text-xs font-black text-cyan-400 uppercase tracking-widest">{CATEGORY_LABELS[currentTrack.category] || currentTrack.category}</span>
                 <span className="w-1 h-1 rounded-full bg-white/10" />
-                <span className="text-[10px] sm:text-xs text-white/30 font-mono font-bold">{formatTime(currentTime)} / {formatTime(duration)}</span>
+                <span className="text-[10px] sm:text-xs text-white/30 font-mono font-bold whitespace-nowrap">{formatTime(currentTime)} / {formatTime(duration)}</span>
               </div>
             </div>
           </div>

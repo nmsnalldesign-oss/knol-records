@@ -25,7 +25,7 @@ export default function HowToBuySection() {
   ]
 
   return (
-    <section id="how-to-buy" className="relative py-24 px-5 sm:px-8 bg-[#0B0C10]">
+    <section id="how-to-buy" className="relative py-12 sm:py-24 px-5 sm:px-8 bg-[#0B0C10]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-cyan-400/30 bg-cyan-400/10 text-cyan-400 text-[10px] font-bold tracking-wider uppercase mb-5 shadow-sm">

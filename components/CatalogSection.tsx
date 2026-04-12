@@ -46,7 +46,7 @@ export default function CatalogSection() {
       : tracks.filter(t => t.category === activeCategory)
 
   return (
-    <section id="catalog" className="relative py-24 px-5 sm:px-8">
+    <section id="catalog" className="relative py-12 sm:py-24 px-5 sm:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-10 text-center sm:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-cyan-400/30 bg-cyan-400/10 text-cyan-400 text-[10px] font-bold tracking-wider uppercase mb-3 shadow-sm">
