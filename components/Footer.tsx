@@ -30,11 +30,6 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 text-sm text-[#64748B] font-medium border-t border-white/10 pt-10">
           <div className="space-y-2">
             <div className="font-display text-base text-white/90 font-bold tracking-wide">СонграйтерКноль</div>
-            <div className="flex items-center gap-3">
-              <span>Самозанятый</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-              <span>ИНН XXXXXXXXXXXX</span>
-            </div>
           </div>
           <div className="flex flex-wrap gap-x-8 gap-y-4">
             {/* Ссылки убраны по просьбе */}
