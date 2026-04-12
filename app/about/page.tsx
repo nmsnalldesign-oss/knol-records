@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'О нас — СонграйтерKnol',
-  description: 'Информация о СонграйтерKnol',
+  title: 'О нас — СонграйтерКноль',
+  description: 'Информация о СонграйтерКноль',
 }
 
 export default function AboutPage() {
@@ -13,7 +13,7 @@ export default function AboutPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 blur-[100px] rounded-full pointer-events-none" />
           <h1 className="font-display text-4xl md:text-5xl text-white mb-6 font-bold text-glow">О нас</h1>
           <p className="text-white/70 text-lg leading-relaxed mb-6 font-medium">
-            Мы студия СонграйтерKnol. Создаем уникальные треки под ключ для артистов, контент-мейкеров и брендов. 
+            Мы студия СонграйтерКноль. Создаем уникальные треки под ключ для артистов, контент-мейкеров и брендов. 
             Каждая песня в нашем каталоге — это полностью готовый к релизу продукт с профессиональной аранжировкой и сведенным вокалом.
           </p>
           <a href="/" className="btn-main mt-4">На главную</a>

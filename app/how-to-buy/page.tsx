@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Как купить — СонграйтерKnol',
+  title: 'Как купить — СонграйтерКноль',
   description: 'Инструкция по покупке авторских песен',
 }
 

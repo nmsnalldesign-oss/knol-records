@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Политика конфиденциальности — СонграйтерKnol',
+  title: 'Политика конфиденциальности — СонграйтерКноль',
   description: 'Политика конфиденциальности и обработки персональных данных.',
 }
 
