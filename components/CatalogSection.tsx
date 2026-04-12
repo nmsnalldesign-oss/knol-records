@@ -57,7 +57,7 @@ export default function CatalogSection() {
             Каталог песен
           </h2>
           <p className="text-[#888] max-w-lg text-[15px] font-medium leading-relaxed">
-            Послушайте демо и нажмите &quot;Связаться&quot; для покупки. Все треки идут с полными авторскими правами.
+            Послушайте демо и нажмите &quot;Связаться&quot; для покупки.
           </p>
         </div>
 
