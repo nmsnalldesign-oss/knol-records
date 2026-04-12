@@ -4,6 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import { usePlayerStore } from '@/lib/playerStore'
 import { formatTime } from '@/lib/utils'
 
+const CATEGORY_LABELS: Record<string, string> = {
+  children: 'Детская',
+  male: 'Мужская',
+  female: 'Женская',
+}
+
 export default function GlobalAudioPlayer() {
   const {
     currentTrack,
@@ -116,8 +122,8 @@ export default function GlobalAudioPlayer() {
           {/* LEFT: Info */}
           <div className="flex items-center gap-4 min-w-0 flex-1">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#111] border border-white/10 overflow-hidden shrink-0 shadow-2xl group flex items-center justify-center relative">
-              {currentTrack.coverUrl ? (
-                <img src={currentTrack.coverUrl} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" alt="" />
+              {currentTrack.coverUrl || (currentTrack as any).cover_url ? (
+                <img key={currentTrack.id} src={currentTrack.coverUrl || (currentTrack as any).cover_url} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" alt="" />
               ) : (
                 <div className="text-xl">🎵</div>
               )}
@@ -125,7 +131,7 @@ export default function GlobalAudioPlayer() {
             <div className="min-w-0">
               <div className="text-white font-black text-sm sm:text-lg truncate tracking-tight uppercase">{currentTrack.title}</div>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] sm:text-xs font-black text-cyan-400 uppercase tracking-widest">{currentTrack.category}</span>
+                <span className="text-[10px] sm:text-xs font-black text-cyan-400 uppercase tracking-widest">{CATEGORY_LABELS[currentTrack.category] || currentTrack.category}</span>
                 <span className="w-1 h-1 rounded-full bg-white/10" />
                 <span className="text-[10px] sm:text-xs text-white/30 font-mono font-bold">{formatTime(currentTime)} / {formatTime(duration)}</span>
               </div>
@@ -149,7 +155,7 @@ export default function GlobalAudioPlayer() {
               {isPlaying ? (
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1.5"/><rect x="14" y="4" width="4" height="16" rx="1.5"/></svg>
               ) : (
-                <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg className="w-6 h-6 outline-none" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
               )}
             </button>
 
