@@ -68,8 +68,8 @@ export default function AboutSection() {
               <div className="text-sm text-cyan-400 font-bold uppercase tracking-wider">Готовых демо</div>
             </div>
             <div>
-              <div className="text-3xl font-display font-bold text-white mb-2">100%</div>
-              <div className="text-sm text-cyan-400 font-bold uppercase tracking-wider">Передача прав</div>
+              <div className="text-3xl font-display font-bold text-white mb-2">200+</div>
+              <div className="text-sm text-cyan-400 font-bold uppercase tracking-wider">Продано песен</div>
             </div>
           </div>
         </div>
