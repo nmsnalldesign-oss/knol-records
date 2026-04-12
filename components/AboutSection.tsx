@@ -83,7 +83,7 @@ export default function AboutSection() {
                 src="/ivan.jpg" 
                 alt="Иван Кноль" 
                 fill 
-                className="object-cover object-top group-hover:scale-105 transition-transform duration-700" 
+                className="object-cover object-[center_15%] group-hover:scale-105 transition-transform duration-700" 
               />
             </div>
             
