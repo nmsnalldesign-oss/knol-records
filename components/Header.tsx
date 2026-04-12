@@ -3,23 +3,10 @@
 import { useState, useEffect } from 'react'
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'glass-strong border-b border-white/10 shadow-lg'
-          : 'bg-transparent'
-      }`}
-    >
+    <header className="fixed top-0 left-0 right-0 z-50 glass-strong border-b border-white/10 shadow-lg">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 h-[80px] flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="font-display text-2xl text-white tracking-wide font-bold drop-shadow-md">

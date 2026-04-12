@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { usePlayerStore } from '@/lib/playerStore'
 import { formatTime } from '@/lib/utils'
 
@@ -123,7 +124,7 @@ export default function GlobalAudioPlayer() {
           <div className="flex items-center gap-4 min-w-0 flex-1">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#111] border border-white/10 overflow-hidden shrink-0 shadow-2xl group flex items-center justify-center relative">
               {currentTrack.coverUrl || (currentTrack as any).cover_url ? (
-                <img key={currentTrack.id} src={currentTrack.coverUrl || (currentTrack as any).cover_url} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" alt="" />
+                <Image src={currentTrack.coverUrl || (currentTrack as any).cover_url} fill className="object-cover transition-transform group-hover:scale-110 duration-700" alt="" sizes="64px" />
               ) : (
                 <div className="text-xl">🎵</div>
               )}

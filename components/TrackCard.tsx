@@ -47,7 +47,7 @@ export default function TrackCard({ track, tracksList }: { track: Track, tracksL
         @keyframes eqBar3 { from { height: 6px; } to { height: 14px; } }
       `}} />
       <div className="group flex flex-col h-full bg-white/5 backdrop-blur-xl border-t border-white/10 rounded-3xl overflow-hidden shadow-2xl w-full">
-        <div className="relative w-full aspect-square bg-[#050505] shrink-0">
+        <div className="relative w-full aspect-square bg-[#050505] shrink-0 overflow-hidden rounded-t-3xl isolate">
           {track.coverUrl ? (
             <Image
               src={track.coverUrl}

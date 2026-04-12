@@ -68,13 +68,13 @@ export default function HeroSection() {
       
       <div className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8">
         <div className="relative w-full aspect-[3/4] sm:aspect-[16/9] lg:aspect-[2.3/1] bg-white/5 backdrop-blur-xl border-t border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             <motion.div
               key={current}
-              initial={{ opacity: 0, x: 40, scale: 0.98 }}
+              initial={{ opacity: 0, x: 20, scale: 0.98 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -40, scale: 0.98 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0, x: -20, scale: 0.98 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
               className={`absolute inset-0 w-full h-full flex items-center ${BANNER_STYLES[current].bgClass}`}
             >
               <div className="p-8 sm:p-14 lg:p-20 w-full lg:w-3/4 h-full flex flex-col justify-center relative z-10">
