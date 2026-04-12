@@ -78,7 +78,7 @@ export default function AboutSection() {
         {/* Right side visual */}
         <div className="lg:w-1/2 w-full relative">
           <div className="glass-panel p-6 sm:p-8 rounded-3xl border-t border-white/10 flex flex-col bg-white/5 relative group">
-            <div className="w-full aspect-[4/5] lg:aspect-[3/4] rounded-2xl overflow-hidden mb-8 relative">
+            <div className="w-full aspect-square rounded-2xl overflow-hidden mb-8 relative">
               <Image 
                 src="/ivan.jpg" 
                 alt="Иван Кноль" 
