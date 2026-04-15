@@ -63,7 +63,7 @@ export default function HeroSection() {
   const prevSlide = () => setCurrent(prev => (prev - 1 + banners.length) % banners.length)
 
   return (
-    <section id="hero" className="relative sm:min-h-[92vh] flex items-center justify-center pt-24 pb-4 sm:pb-12 w-full overflow-hidden">
+    <section id="hero" className="relative sm:min-h-[70vh] flex items-center justify-center pt-20 pb-4 sm:pb-8 w-full overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,206,203,0.02)_0%,transparent_80%)] pointer-events-none z-0" />
       
       <div className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8">
@@ -77,8 +77,8 @@ export default function HeroSection() {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className={`absolute inset-0 w-full h-full flex items-center ${BANNER_STYLES[current].bgClass}`}
             >
-              <div className="p-8 sm:p-14 lg:p-20 w-full lg:w-3/4 h-full flex flex-col justify-center pb-20 sm:pb-14 lg:pb-20 relative z-10">
-                <h1 className="font-display text-3xl sm:text-5xl lg:text-[64px] font-bold leading-[1.05] text-white whitespace-pre-line tracking-tight">
+              <div className="p-6 sm:p-12 lg:p-16 w-full lg:w-3/4 h-full flex flex-col justify-center pb-16 sm:pb-10 lg:pb-12 relative z-10">
+                <h1 className="font-display text-2xl sm:text-4xl lg:text-[56px] font-bold leading-[1.1] text-white whitespace-pre-line tracking-tight">
                   {banners[current].title}
                 </h1>
                 

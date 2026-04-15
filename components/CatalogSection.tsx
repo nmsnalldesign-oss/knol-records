@@ -46,9 +46,9 @@ export default function CatalogSection() {
       : tracks.filter(t => t.category === activeCategory)
 
   return (
-    <section id="catalog" className="relative py-12 sm:py-24 px-5 sm:px-8">
+    <section id="catalog" className="relative py-4 sm:py-8 px-5 sm:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-10 text-center sm:text-left">
+        <div className="mb-8 text-center sm:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm border border-cyan-400/30 bg-cyan-400/10 text-cyan-400 text-[10px] font-bold tracking-wider uppercase mb-3 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             Выбор треков
@@ -56,12 +56,12 @@ export default function CatalogSection() {
           <h2 className="font-display text-4xl sm:text-5xl text-white mb-4">
             Каталог песен
           </h2>
-          <p className="text-[#888] max-w-lg text-[15px] font-medium leading-relaxed">
+          <p className="text-[#888] max-w-lg text-[14px] font-medium leading-relaxed">
             Послушайте демо и нажмите &quot;Связаться&quot; для покупки.
           </p>
         </div>
 
-        <div className="flex gap-2 mb-10 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {categories.map(cat => {
             const count =
               cat.key === 'all'
