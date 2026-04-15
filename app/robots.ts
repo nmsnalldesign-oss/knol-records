@@ -8,21 +8,12 @@ import { MetadataRoute } from 'next'
 // ═══════════════════════════════════════════════════════════════════
 
 export default function robots(): MetadataRoute.Robots {
-  // ── РАЗРАБОТКА — Запрещаем всё ──
   return {
     rules: {
       userAgent: '*',
-      disallow: '/',
+      allow: '/',
+      disallow: ['/admin/', '/api/'],
     },
+    sitemap: 'https://сонграйтеркноль.рф/sitemap.xml',
   }
-
-  // ── ПРОДАКШН — Раскомментируй перед релизом ──
-  // return {
-  //   rules: {
-  //     userAgent: '*',
-  //     allow: '/',
-  //     disallow: ['/admin/', '/api/'],
-  //   },
-  //   sitemap: 'https://сонграйтеркноль.рф/sitemap.xml',
-  // }
 }

@@ -77,23 +77,23 @@ export default function HeroSection() {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className={`absolute inset-0 w-full h-full flex items-center ${BANNER_STYLES[current].bgClass}`}
             >
-              <div className="p-8 sm:p-14 lg:p-20 w-full lg:w-3/4 h-full flex flex-col justify-center relative z-10">
-                <h1 className="font-display text-4xl sm:text-5xl lg:text-[64px] font-bold leading-[1.05] text-white whitespace-pre-line tracking-tight">
+              <div className="p-8 sm:p-14 lg:p-20 w-full lg:w-3/4 h-full flex flex-col justify-center pb-20 sm:pb-14 lg:pb-20 relative z-10">
+                <h1 className="font-display text-3xl sm:text-5xl lg:text-[64px] font-bold leading-[1.05] text-white whitespace-pre-line tracking-tight">
                   {banners[current].title}
                 </h1>
                 
-                <p className="mt-6 text-[15px] sm:text-lg text-[#A3A3A3] leading-relaxed max-w-2xl font-medium">
+                <p className="mt-4 sm:mt-6 text-[14px] sm:text-lg text-[#A3A3A3] leading-relaxed max-w-2xl font-medium">
                   {banners[current].text}
                 </p>
                 
-                <div className="mt-5 text-[#E2E8F0] font-semibold text-sm sm:text-base drop-shadow-md">
+                <div className="mt-4 sm:mt-5 text-[#E2E8F0] font-semibold text-xs sm:text-base drop-shadow-md">
                   {banners[current].action}
                 </div>
                 
-                <div className="mt-10 flex">
+                <div className="mt-6 sm:mt-10 flex">
                   <a
                     href={BANNER_STYLES[current].buttonLink}
-                    className={`inline-flex items-center justify-center px-8 py-4 rounded-2xl font-bold tracking-wide transition-all ${BANNER_STYLES[current].btnClass}`}
+                    className={`inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 rounded-xl sm:rounded-2xl font-bold tracking-wide transition-all ${BANNER_STYLES[current].btnClass}`}
                   >
                     {BANNER_STYLES[current].buttonText}
                   </a>
