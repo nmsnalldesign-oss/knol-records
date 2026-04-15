@@ -35,7 +35,10 @@ export default function Footer() {
             {/* Ссылки убраны по просьбе */}
           </div>
 
-          <div className="font-bold tracking-wider opacity-60">© {new Date().getFullYear()}</div>
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <a href="/privacy" className="hover:text-white transition-colors">Конфиденциальность</a>
+            <div className="font-bold tracking-wider opacity-60">© {new Date().getFullYear()}</div>
+          </div>
         </div>
       </div>
     </footer>
