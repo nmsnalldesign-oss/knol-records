@@ -14,6 +14,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/api/'],
     },
-    sitemap: 'https://сонграйтеркноль.рф/sitemap.xml',
+    sitemap: 'https://xn--80agahbe6afbfcd7bk9f.xn--p1ai/sitemap.xml',
   }
 }
